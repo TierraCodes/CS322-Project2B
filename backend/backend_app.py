@@ -44,3 +44,8 @@ def create_dest():
     conn.commit()
     conn.close()
     return jsonify({"destination": dest_name}), 201  # creates response json, returns HTTP response 201
+
+if __name__ == "__main__":
+    # We use port 5001 so it doesn't clash with your frontend on 5000
+    # debug=True ensures you see errors in the terminal
+    backend_app.run(port=5001, debug=True)
