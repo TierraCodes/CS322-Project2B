@@ -27,7 +27,7 @@ def home():
     # NOTE: can use print(dest_list.json()) # can use for debugging
     try:
         # 1. Ask the backend for the data
-        response = requests.get(backend_url)
+        response = requests.get(f"{backend_url}/api")
         response.raise_for_status()
         # 2. Parse the JSON text into a Python list
         destinations = response.json()
