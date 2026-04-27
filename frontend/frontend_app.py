@@ -1,6 +1,8 @@
 # Front End Full-Stack App
-from flask import Flask, render_template, request, flash
+from flask import Flask, render_template, request, flash, redirect, url_for
 import requests
+from requests import RequestException
+
 # Note the two libraries:
 #
 # flask.request processes incoming requests to the frontend server
@@ -51,7 +53,20 @@ def new_destination():
         dest_name = request.form.get('dest_name')
         dest_notes = request.form.get('dest_notes')
         dest_cost = request.form.get('dest_cost')
-        # TODO: validate the form information before making the backend request
+
+        if not dest_name or len(dest_name) > 20:
+            flash("Invalid destination name.")
+            return redirect(url_for('new_destination'))
+        if len(dest_notes) > 20:
+            flash("Notes must be 20 characters or less.")
+            return redirect(url_for('new_destination'))
+        try:
+            cost_val = float(dest_cost)
+            if cost_val < 0 or cost_val > 1000000:
+                raise ValueError
+        except (ValueError, TypeError):
+            flash("Please enter a valid cost between 0 and 1,000,000.")
+            return redirect(url_for('new_destination'))
 
         # build json with requested data
         new_dest = {
@@ -59,10 +74,17 @@ def new_destination():
             "notes": dest_notes,
             "cost": dest_cost
         }
+
+        try:
+            # SECURITY: Always use timeouts on POST requests to prevent hanging connections.
+            response = requests.post(f"{backend_url}/api/new", json=new_dest, timeout=5)
+            response.raise_for_status()
+            flash(f"Successfully added {dest_name}!")
+        except RequestException:
+            flash("Failed to save destination. The server might be busy.")
         # send a POST request to the backend to create a new entry
-        response = requests.post(backend_url + "/api/new", json=new_dest)
         # Give the user a message
-        return f'<h1>Your form was submitted to add {dest_name}. <a href="/home">Continue</a></h1>'
+        return redirect(url_for('home'))
 
 if __name__ == "__main__":
     # We use port 5001 so it doesn't clash with your frontend on 5000

@@ -40,10 +40,13 @@ def get_all():
 def create_dest():
     # get info from POST request
     data = request.get_json()  # parses incoming json
+    print(f"DEBUG: Backend just received: {data}")
+
     dest_name = data.get("destination")
     dest_notes = data.get("notes")
     dest_cost = data.get("cost")
     # TODO: Input validation on all fields prior to database insertion!
+
 
     # Connect to DB and insert information
     conn = get_db_connection()
