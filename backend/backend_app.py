@@ -19,42 +19,61 @@ def get_db_connection():
 # ENDPOINTS
 @backend_app.route("/api", methods=["GET"])
 def get_all():
-    # retrieve list from the database
-    # connect to DB, run the SQL statement, close the connection
-    conn = get_db_connection()
-    rows = conn.execute('SELECT * FROM destinations').fetchall()
-    conn.close()
-    # the variable rows now contains a list of sqlite Row objects,
-    # which needs to be converted to a list of dictionaries (i.e. json)
-    result_list = []
-    for row in rows:
-        d = dict(row)
-        d['cost'] = float(d['cost'])
-        result_list.append(d)
-    # now we can send it to the json library to convert it to a string
-    json_output = json.dumps(result_list, indent=4)
-    return(json_output), 200  # creates response json, returns HTTP response 200
+    try:
+        conn = get_db_connection()
+        rows = conn.execute('SELECT * FROM destinations').fetchall()
+        conn.close()
+        result_list = []
+        for row in rows:
+            d = dict(row)
+            try:
+                d['cost'] = float(d['cost'])
+            except (TypeError, ValueError):
+                d['cost'] = 0.00  # Default if data is corrupt
+            result_list.append(d)
+
+        return jsonify(result_list), 200
+    except Exception as e:
+        print(f"DATABASE ERROR: {e}")
+        return jsonify({"error": "Could not retrieve data"}), 500
 
 # create a new destination
 @backend_app.route("/api/new", methods=["POST"])
 def create_dest():
     # get info from POST request
-    data = request.get_json()  # parses incoming json
-    print(f"DEBUG: Backend just received: {data}")
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
 
-    dest_name = data.get("destination")
-    dest_notes = data.get("notes")
-    dest_cost = data.get("cost")
-    # TODO: Input validation on all fields prior to database insertion!
+    dest_name = data.get("destination", "").strip()
+    dest_note = data.get("notes", "").strip()
+    raw_cost = data.get("cost")
 
+    # 2. BACKEND VALIDATION (The "Firewall")
+    if not dest_name or len(dest_name) > 20:
+        return jsonify({"error": "Invalid destination name (1-20 chars)"}), 400
 
-    # Connect to DB and insert information
-    conn = get_db_connection()
-    conn.execute('INSERT INTO destinations (destination, notes, cost) VALUES (?, ?, ?)',
-                 (dest_name, dest_notes, dest_cost ))
-    conn.commit()
-    conn.close()
-    return jsonify({"destination": dest_name}), 201  # creates response json, returns HTTP response 201
+    if len(dest_note) > 20:
+        return jsonify({"error": "Notes must be 20 chars or less"}), 400
+
+    try:
+        cost_val = float(raw_cost)
+        if cost_val < 0 or cost_val > 1000000:
+            raise ValueError
+    except (ValueError, TypeError):
+        return jsonify({"error": "Cost must be a number between 0 and 1,000,000"}), 400
+
+    # 3. Secure Database Insertion
+    try:
+        conn = get_db_connection()
+        conn.execute('INSERT INTO destinations (destination, notes, cost) VALUES (?, ?, ?)',
+                     (dest_name, dest_note, cost_val))
+        conn.commit()
+        conn.close()
+        return jsonify({"status": "success", "message": f"Added {dest_name}"}), 201
+    except sqlite3.Error as e:
+        print(f"SQL ERROR: {e}")
+        return jsonify({"error": "Database write failed"}), 500
 
 if __name__ == "__main__":
     # We use port 5001 so it doesn't clash with your frontend on 5000

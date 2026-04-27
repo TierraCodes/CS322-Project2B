@@ -15,7 +15,7 @@
                 <tr class="deadline-row">
                     <td>{{ each_place.destination }}</td>
                     <td>{{ each_place.notes }}</td>
-                    <td>${{ "{:,.2f}".format(each_place.cost) | float }}</td>
+                    <td>${{ "%.2f" | format(each_place.cost) | float }}</td>
                 </tr>
                 {% else %}
                 <tr>
