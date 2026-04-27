@@ -2,13 +2,17 @@
 from flask import Flask, request, jsonify
 import sqlite3
 import json
+import os
 
 # create the backend application, which only works with the database
 backend_app = Flask(__name__)
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+DB_PATH = os.path.join(basedir, 'database.db')
+
 # function to connect to the database
 def get_db_connection():
-    conn = sqlite3.connect('../backend/database.db')
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
