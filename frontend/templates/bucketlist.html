@@ -1,19 +1,37 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% for each_place in places %}
-    <div class="card" style="width: 300px;">
-        {% if each_place.photo == null or each_place.photo == "none" %} <!-- if there is not a photo -->
-            <img src="{{ url_for('static', filename='images/tahiti.jpg') }}" class="card-img-top" alt="...">
-        {% else %} <!-- there is a photo -->
-            <img src="{{ url_for('static', filename='images/'+each_place.photo) }}" class="card-img-top" alt="...">
-        {% endif %}
-        <div class="card-body text-center">
-            <h5 class="card-title">{{ each_place.name }}</h5>
-            <!-- TODO: Add additional fields here -->
-        </div>
+    <div class="table-container">
+        <table class="deadline-table">
+            <thead>
+                <tr>
+                    <th>Destination</th>
+                    <th>Notes</th>
+                    <th>Estimated Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for each_place in places %}
+                <tr class="deadline-row">
+                    <td>{{ each_place.destination }}</td>
+                    <td>{{ each_place.notes }}</td>
+                    <td>${{ "{:,.2f}".format(each_place.cost) }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 20px;">
+                        No destinations added yet. Time to plan a trip!
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    {% endfor %}
+
     <br>
-    <h2><a href="/new_destination">Enter a new bucket list destination</a></h2>
+    <div style="text-align: center;">
+        <a href="{{ url_for('new_destination') }}" class="btn-update" style="text-decoration: none; padding: 10px 20px;">
+            Add New Destination
+        </a>
+    </div>
 {% endblock %}
