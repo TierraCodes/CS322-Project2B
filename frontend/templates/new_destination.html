@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <br>
+    <h1>Add A New Destination</h1>
+    <form method="POST">
+        <label for="dest_name">Enter Destination Name:</label>
+        <input type="text" id="dest_name" name="dest_name" required>
+        <button type="submit">Submit</button>
+    </form>
+{% endblock %}
+

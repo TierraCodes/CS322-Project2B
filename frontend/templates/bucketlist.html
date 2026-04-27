@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% for each_place in places %}
+    <div class="card" style="width: 300px;">
+        {% if each_place.photo == null or each_place.photo == "none" %} <!-- if there is not a photo -->
+            <img src="{{ url_for('static', filename='images/tahiti.jpg') }}" class="card-img-top" alt="...">
+        {% else %} <!-- there is a photo -->
+            <img src="{{ url_for('static', filename='images/'+each_place.photo) }}" class="card-img-top" alt="...">
+        {% endif %}
+        <div class="card-body text-center">
+            <h5 class="card-title">{{ each_place.name }}</h5>
+            <!-- TODO: Add additional fields here -->
+        </div>
+    </div>
+    {% endfor %}
+    <br>
+    <h2><a href="/new_destination">Enter a new bucket list destination</a></h2>
+{% endblock %}
