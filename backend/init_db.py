@@ -12,7 +12,6 @@ with open('schema.sql') as db_file:
 cur = connection.cursor()
 
 # add two default entries
-# TODO: You will need to modify this to handle the additional fields
 cur.execute("INSERT INTO destinations (destination, notes, cost) VALUES (?, ?, ?)",
             ('Hawaii', 'honolulu', 35.45)
             )
